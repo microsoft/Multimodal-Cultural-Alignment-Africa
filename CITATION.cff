@@ -1,0 +1,10 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite it using this metadata."
+title: "Multimodal Cultural Alignment Africa"
+type: software
+authors:
+  - name: "Microsoft Corporation"
+repository-code: "https://github.com/microsoft/Multimodal-Cultural-Alignment-Africa"
+license: MIT
+version: 0.1.0
+date-released: 2026-09-01

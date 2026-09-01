@@ -1,0 +1,28 @@
+[
+  {
+    "id": "synthetic-xichangana-001",
+    "culture": "Xichangana",
+    "question": "How can I prepare an affordable balanced meal?",
+    "person": {
+      "name": "Marta",
+      "occupation": "market vendor",
+      "location": "Maputo",
+      "culture": "Xichangana",
+      "community_type": "peri-urban"
+    },
+    "paragraphs": [
+      "Before opening her market stall, Marta prepares xima with beans and seasonal greens for the family.",
+      "At the clinic, a nurse discusses portions and suggests using foods already available at the neighborhood market."
+    ],
+    "text": "Before opening her market stall, Marta prepares xima with beans and seasonal greens for the family.\n\nAt the clinic, a nurse discusses portions and suggests using foods already available at the neighborhood market.",
+    "images": [],
+    "metadata": {
+      "image_prompts": [
+        "A peri-urban Maputo kitchen with a charcoal stove, a pot of xima, beans, and leafy greens.",
+        "A local clinic consultation between Marta and a uniformed nurse."
+      ]
+    },
+    "category": "diet",
+    "taskType": "synthetic_example"
+  }
+]

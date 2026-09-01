@@ -1,0 +1,16 @@
+# Data and privacy
+
+This public repository contains only synthetic demonstration records. It does
+not include the original annotation-platform exports, annotator identities,
+study participant data, generated evaluation runs, or unpublished research
+artifacts used during development.
+
+To evaluate another dataset, convert each record to the schema demonstrated in
+`examples/sample_stories.json`. Remove direct identifiers and confirm that you
+have permission to process and publish any text, images, or derived results.
+Every field under `person` is transmitted to the configured model provider and
+stored in the output, so only include context necessary for the evaluation.
+
+Remote image URLs are sent to the configured model provider. Use local image
+files or an approved provider when the images are private or access-controlled.
+Local filesystem paths are not included in model prompts.
