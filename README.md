@@ -14,6 +14,27 @@ and a synthetic input example. Original annotation exports, annotator
 identities, study data, and unpublished generated results are intentionally
 excluded. See [DATA.md](DATA.md).
 
+## Associated publication
+
+This repository accompanies the paper **"Toward Cultural Alignment:
+Human-Centered Evaluation of Multimodal AI Stories Across Five African
+Communities,"** accepted to **Findings of EMNLP 2026**. The preprint is
+available on [arXiv](https://arxiv.org/abs/2608.29209).
+
+If you use this repository, please cite:
+
+```bibtex
+@misc{ochieng2026culturalalignmenthumancenteredevaluation,
+  title        = {Toward Cultural Alignment: Human-Centered Evaluation of Multimodal AI Stories Across Five African Communities},
+  author       = {Millicent Ochieng and Felermino D. M. A. Ali and Elizabeth A. Ankrah and Najeeb Gambo Abdulhamid and Migisha Boyd and Stephanie Nyairo and Mercy Muchai and Samuel Chege Maina and Aditya Vashistha and Anja Thieme and Jacki O'Neill},
+  year         = {2026},
+  eprint       = {2608.29209},
+  archivePrefix = {arXiv},
+  primaryClass = {cs.CL},
+  url          = {https://arxiv.org/abs/2608.29209}
+}
+```
+
 ## Repository structure
 
 ```text
