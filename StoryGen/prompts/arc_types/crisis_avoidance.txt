@@ -1,0 +1,23 @@
+* **Paragraph 0:** Select persona fields related to symptoms, health risks, and job stakes.
+
+* **Paragraph 1:**
+  Daily habits show warning signs or discomfort.
+  Failure of the small task includes a **health scare or limitation**.
+  {max_word_count}
+
+* **Paragraph 2:**
+  Help comes from a trusted health authority.
+  Advice (clear, simple, personalized, culturally relevant, actionable, and practical) emphasizes preventing serious future consequences.
+  Resistance is rooted in fear or denial.
+  {max_word_count}
+
+* **Paragraph 3:**
+  The persona attempts the change but hesitates or backslides due to anxiety.
+  They reframe the change as necessary to succeed at the larger task.
+  {max_word_count}
+
+* **Paragraph 4:**
+  Health stabilizes in a realistic way.
+  The larger task is completed with relief.
+  The persona is motivated to prevent future crises.
+  {max_word_count}

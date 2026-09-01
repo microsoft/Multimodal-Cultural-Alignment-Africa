@@ -1,0 +1,12 @@
+- **Paragraph 1:** Introduce {px_name}’s current **daily life and diet habits** as described above.
+Mention any **cultural and environmental factors** that make change difficult.
+The persona currently has a small work-related task that foreshadows a larger work-related task. They fail to accomplish the task because of issues related to health changes they need to make. All motivation to change comes from the need to accomplish the current and future task. {max_word_count}
+
+- **Paragraph 2:** Because of the failed small task, {px_name} needs help. Depending on the given healthcare access & resources, either {px_name} seeks help e.g., visits a **clinic or community health worker**, or help finds them coincidentally e.g., support network. This helper gives practical advice on managing their lifestyle or current challenge.
+The persona is initially resistant to the change. Motivation to change comes from failure at the small task. The health worker suggests a small change that will help the persona accomplish the task. {max_word_count}
+
+- **Paragraph 3:** Describe **how {px_name} tries to follow the advice given**, facing initial struggles due to certain reason(s). Describe how they overcome these struggles.
+The persona tries to make the prescribed health change but faces a setback. They try to find alternative ways to pursue the health change in light of the upcoming larger task. {max_word_count}
+
+- **Paragraph 4:** Highlight **positive but realistic changes**, that result from the new effort they've put in.
+The persona finds the small changes helpful in health management. This enables them accomplish the larger task. The persona recognises the health AND work-related benefits of the health changes. The persona is motivated to make more / bigger changes to their health habits. {max_word_count}

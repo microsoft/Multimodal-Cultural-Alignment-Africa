@@ -1,0 +1,23 @@
+- **Paragraph 0:** Select persona fields related to family, community, and shared responsibilities.
+
+- **Paragraph 1:**
+  Daily life is shaped by **social and cultural expectations**.
+  The small work task fails due to competing social demands affecting health.
+  {max_word_count}
+
+- **Paragraph 2:**
+  Help comes from a **family member, coworker, or community figure**.
+  Initial resistance comes from fear of disrupting social norms.
+  Advice (clear, simple, personalized, culturally relevant, actionable, and practical) is framed as shared or collective.
+  {max_word_count}
+
+- **Paragraph 3:**
+  The persona tries to change but faces setbacks due to social situations.
+  They adapt by involving others or adjusting timing.
+  {max_word_count}
+
+- **Paragraph 4:**
+  Positive changes are reinforced socially.
+  The larger task is completed with support.
+  The persona feels motivated to sustain change within their community.
+  {max_word_count}

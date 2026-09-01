@@ -1,0 +1,23 @@
+- **Paragraph 0:** Select persona fields related to adaptability, problem-solving, and work learning curves.
+
+- **Paragraph 1:**
+  The small task fails as part of **trial and error**, not a single mistake.
+  Health issues are one of several contributing factors.
+  {max_word_count}
+
+- **Paragraph 2:**
+  Help provides practical advice, but it is not positioned as a perfect solution.
+  Resistance is low; expectations are cautious.
+  {max_word_count}
+
+- **Paragraph 3:**
+  The initial strategy does not work.
+  A setback occurs.
+  The persona modifies the advice (clear, simple, personalized, culturally relevant, actionable, and practical) creatively to fit their reality and the larger task.
+  {max_word_count}
+
+- **Paragraph 4:**
+  Learning from iteration leads to success in the larger task.
+  Health improvements are modest but meaningful.
+  The persona commits to ongoing adjustment rather than perfection.
+  {max_word_count}

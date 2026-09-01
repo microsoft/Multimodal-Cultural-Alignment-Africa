@@ -4,18 +4,13 @@ from __future__ import annotations
 
 import csv
 import json
-import os
+import random
 import re
 import uuid
+import warnings
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Iterable, Mapping, Sequence
-
-try:
-    from tqdm import tqdm
-except ImportError:  # Allows lightweight validation before optional dependencies.
-    def tqdm(iterable: Iterable[Any], **_: Any) -> Iterable[Any]:
-        return iterable
 
 
 COMPONENT_DIR = Path(__file__).resolve().parent
@@ -128,6 +123,12 @@ FIELD_ALIASES: dict[str, tuple[str, ...]] = {
         "How would you like the story to sound? (Select 1)",
     ),
     "question": ("question", "Question"),
+    "generated_queries": (
+        "generated_queries",
+        "Generated queries",
+        "Generated Queries",
+        "Consultas Geradas",
+    ),
     "category": ("category", "Category"),
     "label": ("label", "Label"),
     "story_arc": ("story_arc", "Story arc"),
@@ -152,6 +153,7 @@ QUESTION_TRANSLATIONS = {
 @dataclass(frozen=True)
 class GenerationOptions:
     project_id: str
+    model_type: str
     model_name: str
     language: str
     country: str
@@ -186,13 +188,23 @@ def load_profiles(path: Path) -> list[dict[str, str]]:
         reader = csv.DictReader(handle)
         if not reader.fieldnames:
             raise ValueError(f"Profile CSV has no header: {path}")
-        profiles = [normalize_profile(row) for row in reader]
+        profiles = []
+        skipped_rows = []
+        for row_number, row in enumerate(reader, start=2):
+            profile = normalize_profile(row)
+            if "question" not in profile:
+                skipped_rows.append(row_number)
+                continue
+            profiles.append(profile)
 
     if not profiles:
-        raise ValueError(f"Profile CSV has no data rows: {path}")
-    for index, profile in enumerate(profiles, start=2):
-        if "question" not in profile:
-            raise ValueError(f"CSV row {index} has no Question value")
+        raise ValueError(f"Profile CSV has no rows with a Question value: {path}")
+    if skipped_rows:
+        warnings.warn(
+            "Skipped CSV rows without a Question value: "
+            + ", ".join(map(str, skipped_rows)),
+            stacklevel=2,
+        )
     return profiles
 
 
@@ -222,12 +234,81 @@ def translated_question(question: str, language: str) -> str:
     return question
 
 
+def resolve_story_arc_path(
+    profile: Mapping[str, str], fallback: Path = DEFAULT_ARC_PATH
+) -> Path:
+    value = profile.get("story_arc", "").strip().lower()
+    if not value:
+        return fallback
+    filename = re.sub(r"[^a-z0-9]+", "_", value).strip("_") + ".txt"
+    candidate = DEFAULT_ARC_PATH.parent / filename
+    if not candidate.is_file():
+        warnings.warn(
+            f"Unknown story arc '{value}'; using {fallback.name}",
+            stacklevel=2,
+        )
+        return fallback
+    return candidate
+
+
+def prepare_profile_for_condition(
+    profile: Mapping[str, str], seed: int
+) -> tuple[dict[str, str], list[str]]:
+    """Apply the study condition without mutating the source profile."""
+    prepared = dict(profile)
+    if prepared.get("label", "").upper() != "BAD":
+        return prepared, sorted(prepared)
+
+    required = {
+        "study_number",
+        "question",
+        "category",
+        "gender",
+        "story_tone",
+        "label",
+        "generated_queries",
+        "type",
+        "story_arc",
+        "parent",
+        "name",
+    }
+    important = {
+        "age",
+        "culture",
+        "religion",
+        "occupation",
+        "type_2_diabetes",
+        "diabetes_treatment",
+        "other_health_conditions",
+    }
+    available = set(prepared)
+    rng = random.Random(seed)
+
+    def sample_half(fields: set[str]) -> set[str]:
+        ordered = sorted(fields)
+        count = len(ordered) // 2
+        return set(rng.sample(ordered, count)) if count else set()
+
+    optional = available - required - important
+    selected = (
+        (required & available)
+        | sample_half(important & available)
+        | sample_half(optional)
+    )
+    filtered = {key: prepared[key] for key in prepared if key in selected}
+    for field in ("culture", "province", "religion"):
+        filtered[field] = "None"
+    return filtered, sorted(filtered)
+
+
 def build_prompt(
     profile: Mapping[str, str],
     *,
     language: str,
     country: str,
     culture: str,
+    medical_ground_truth: str = "",
+    culture_support: str | None = None,
     prompt_path: Path = DEFAULT_PROMPT_PATH,
     arc_path: Path = DEFAULT_ARC_PATH,
 ) -> str:
@@ -237,7 +318,10 @@ def build_prompt(
         raise FileNotFoundError(f"Story arc template does not exist: {arc_path}")
 
     template = prompt_path.read_text(encoding="utf-8")
-    story_arc = arc_path.read_text(encoding="utf-8").format(max_word_count=180)
+    story_arc = arc_path.read_text(encoding="utf-8").format(
+        max_word_count="180 words maximum.",
+        px_name=profile.get("name", "the participant"),
+    )
     context = dict(profile)
     context.setdefault("culture", culture)
     context["country"] = country
@@ -246,11 +330,12 @@ def build_prompt(
     values = {
         "px_name": profile.get("name", "the participant"),
         "persona_needs": question,
-        "medical_ground_truth": "",
+        "medical_ground_truth": medical_ground_truth,
         "rag_clean_participant_profile": json.dumps(
             context, ensure_ascii=False, indent=2
         ),
-        "culture_support": (
+        "culture_support": culture_support
+        or (
             f"Use culturally plausible details for {culture} in {country}; do not "
             "invent unsupported participant attributes."
         ),
@@ -280,7 +365,9 @@ def extract_json_object(text: str) -> str:
     return text[start : end + 1]
 
 
-def parse_generated_story(text: str) -> dict[str, dict[str, str]]:
+def parse_generated_story(
+    text: str, *, require_audio_prompts: bool = False
+) -> dict[str, dict[str, str]]:
     candidate = extract_json_object(text)
     try:
         value = json.loads(candidate)
@@ -313,155 +400,22 @@ def parse_generated_story(text: str) -> dict[str, dict[str, str]]:
     missing_images = [
         key for key in ("1", "2", "3", "4") if key not in normalized["image_prompts"]
     ]
-    if missing_paragraphs or missing_images:
+    missing_audio = (
+        [
+            key
+            for key in ("1", "2", "3", "4")
+            if key not in normalized["audio_prompts"]
+        ]
+        if require_audio_prompts
+        else []
+    )
+    if missing_paragraphs or missing_images or missing_audio:
         raise ValueError(
             "Model response is incomplete: "
-            f"missing paragraphs={missing_paragraphs}, image_prompts={missing_images}"
+            f"missing paragraphs={missing_paragraphs}, "
+            f"image_prompts={missing_images}, audio_prompts={missing_audio}"
         )
     return normalized
-
-
-class HuggingFaceStoryGenerator:
-    """Lazy Hugging Face text-generation pipeline."""
-
-    def __init__(
-        self,
-        model_name: str,
-        *,
-        max_new_tokens: int,
-        temperature: float,
-    ) -> None:
-        try:
-            from transformers import pipeline
-        except ImportError as exc:
-            raise RuntimeError(
-                "Hugging Face dependencies are missing; install requirements.txt"
-            ) from exc
-
-        token = os.getenv("HF_TOKEN") or os.getenv("HUGGINGFACE_API_TOKEN")
-        kwargs: dict[str, Any] = {
-            "model": model_name,
-            "device_map": "auto",
-            "torch_dtype": "auto",
-        }
-        if token:
-            kwargs["token"] = token
-
-        self.pipeline = pipeline("text-generation", **kwargs)
-        tokenizer = self.pipeline.tokenizer
-        if tokenizer.pad_token_id is None:
-            tokenizer.pad_token_id = tokenizer.eos_token_id
-        self.max_new_tokens = max_new_tokens
-        self.temperature = temperature
-
-    def generate(self, prompts: Sequence[str], batch_size: int) -> list[str]:
-        responses: list[str] = []
-        starts = range(0, len(prompts), batch_size)
-        for start in tqdm(
-            starts,
-            total=(len(prompts) + batch_size - 1) // batch_size,
-            desc="Generating stories",
-            unit="batch",
-        ):
-            batch = [
-                f"{SYSTEM_PROMPT}\n\n{prompt}" for prompt in prompts[start : start + batch_size]
-            ]
-            generation_args: dict[str, Any] = {
-                "max_new_tokens": self.max_new_tokens,
-                "return_full_text": False,
-                "batch_size": batch_size,
-                "do_sample": self.temperature > 0,
-            }
-            if self.temperature > 0:
-                generation_args["temperature"] = self.temperature
-            outputs = self.pipeline(batch, **generation_args)
-            for output in outputs:
-                item = output[0] if isinstance(output, list) else output
-                generated_text = item.get("generated_text")
-                if not isinstance(generated_text, str):
-                    raise ValueError("Hugging Face returned an unexpected output shape")
-                responses.append(generated_text)
-        return responses
-
-
-class FluxImageGenerator:
-    """Lazy local FLUX generator using Diffusers."""
-
-    def __init__(self, model_name: str) -> None:
-        try:
-            import torch
-            from diffusers import FluxPipeline
-        except ImportError as exc:
-            raise RuntimeError(
-                "Image dependencies are missing; install requirements.txt"
-            ) from exc
-
-        token = os.getenv("HF_TOKEN") or os.getenv("HUGGINGFACE_API_TOKEN")
-        kwargs: dict[str, Any] = {"torch_dtype": torch.bfloat16}
-        if token:
-            kwargs["token"] = token
-        self.torch = torch
-        self.pipeline = FluxPipeline.from_pretrained(model_name, **kwargs)
-        if torch.cuda.is_available():
-            self.pipeline.enable_model_cpu_offload()
-        else:
-            raise RuntimeError("Local FLUX image generation requires a CUDA GPU")
-
-    def generate(
-        self,
-        prompts: Mapping[str, str],
-        output_dir: Path,
-        base_name: str,
-        seed: int,
-    ) -> list[Path]:
-        output_dir.mkdir(parents=True, exist_ok=True)
-        images: list[Path] = []
-        ordered = [(key, prompts[key]) for key in ("1", "2", "3", "4")]
-        for offset, (paragraph, prompt) in enumerate(
-            tqdm(ordered, desc=f"Generating images for {base_name}", unit="image")
-        ):
-            generator = self.torch.Generator("cpu").manual_seed(seed + offset)
-            image = self.pipeline(
-                prompt,
-                guidance_scale=0.0,
-                num_inference_steps=4,
-                max_sequence_length=256,
-                generator=generator,
-            ).images[0]
-            path = output_dir / f"{base_name}_{paragraph}.png"
-            image.save(path)
-            images.append(path)
-        return images
-
-
-class SupabaseUploader:
-    """Lazy Supabase Storage uploader."""
-
-    def __init__(self) -> None:
-        try:
-            from supabase import create_client
-        except ImportError as exc:
-            raise RuntimeError(
-                "Supabase dependencies are missing; install requirements.txt"
-            ) from exc
-
-        url = os.getenv("SUPABASE_URL")
-        key = os.getenv("SUPABASE_KEY")
-        if not url or not key:
-            raise ValueError(
-                "--upload-storage requires SUPABASE_URL and SUPABASE_KEY"
-            )
-        self.client = create_client(url, key)
-        self.bucket = os.getenv("SUPABASE_IMAGE_BUCKET", "images")
-
-    def upload_image(self, path: Path, object_name: str) -> str:
-        with path.open("rb") as handle:
-            self.client.storage.from_(self.bucket).upload(
-                object_name,
-                handle,
-                file_options={"content-type": "image/png", "upsert": "true"},
-            )
-        return self.client.storage.from_(self.bucket).get_public_url(object_name)
 
 
 def create_task(
@@ -470,6 +424,10 @@ def create_task(
     *,
     task_id: str,
     image_references: Sequence[str],
+    audio_references: Sequence[str],
+    grounding_context: str,
+    selected_profile_fields: Sequence[str],
+    media_errors: Mapping[str, str],
     options: GenerationOptions,
 ) -> dict[str, Any]:
     paragraphs = [story["paragraphs"][str(index)] for index in range(1, 5)]
@@ -479,18 +437,22 @@ def create_task(
             "title": f"Story for {task_id}",
             "description": "",
             "images": list(image_references),
-            "audio": [],
+            "audio": list(audio_references),
             "paragraphs": paragraphs,
             "language": options.language,
             "country": options.country,
             "culture": options.culture,
             "profile": dict(profile),
             "model": options.model_name,
+            "model_type": options.model_type,
         },
         "metadata": {
             "source_id": task_id,
             "image_prompts": dict(story["image_prompts"]),
             "audio_prompts": dict(story["audio_prompts"]),
+            "grounding_context": grounding_context,
+            "selected_profile_fields": list(selected_profile_fields),
+            "media_errors": dict(media_errors),
         },
     }
 

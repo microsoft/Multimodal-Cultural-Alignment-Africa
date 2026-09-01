@@ -1,0 +1,24 @@
+- **Paragraph 0:** Select persona fields related to long-standing habits, beliefs, and work pressure.
+
+- **Paragraph 1:**
+  Introduce daily habits that are deeply ingrained.
+  The small work task fails due to **stubborn routines or skepticism** about health change.
+  {max_word_count}
+
+- **Paragraph 2:**
+  Help is offered by a health worker or trusted person.
+  The persona doubts the advice (clear, simple, personalized, culturally relevant, actionable, and practical) and resists change.
+  They agree to a small adjustment only to fix the work issue.
+  {max_word_count}
+
+- **Paragraph 3:**
+  The persona partially ignores or delays the advice.
+  This leads to a setback.
+  They reluctantly adjust their approach because the larger task is approaching.
+  {max_word_count}
+
+- **Paragraph 4:**
+  Success in the larger task acts as **proof** that the health change works.
+  Resistance softens.
+  The persona acknowledges both health and work benefits.
+  {max_word_count}
