@@ -14,3 +14,14 @@ stored in the output, so only include context necessary for the evaluation.
 Remote image URLs are sent to the configured model provider. Use local image
 files or an approved provider when the images are private or access-controlled.
 Local filesystem paths are not included in model prompts.
+
+The `AnnotationPlatform` story-generation component accepts profile CSVs
+supplied by the operator. Profile fields are transmitted to the selected model
+provider and copied into local task JSON for traceability. When image generation
+is enabled, image prompts are processed by the configured local model. When
+storage upload is enabled, generated images are sent to the configured
+Supabase project.
+
+Operators are responsible for de-identification, consent, institutional
+approval, provider data-handling terms, access controls, retention, and deletion
+of all non-synthetic inputs and outputs.

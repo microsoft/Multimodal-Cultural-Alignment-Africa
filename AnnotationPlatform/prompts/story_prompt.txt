@@ -1,0 +1,25 @@
+Our persona has the following profile: {rag_clean_participant_profile}
+
+Using the profile of {px_name} and understanding the persona's needs ("{persona_needs}"), identify the most relevant information of the persona's profile that can be leveraged to create an engaging story aimed at inspiring behavior change. List of relevant fields.
+Then, Generate a five-paragraph health story written in {language} that centers around the needs of our persona, which is based on the following question: {persona_needs}.
+{language_level}
+The story will have a small work task that foreshadows a larger work task. This will serve as external motivation for the persona to make health changes. The generated story should be in a {px_output_tone} tone.
+
+Use only this medical ground truth to inform all story decisions and outcomes:
+<start medical ground truth>
+{medical_ground_truth}
+<end medical ground truth>
+
+Use only this cultural ground truth to inform all story decisions and outcomes:
+<start cultural ground truth>
+{culture_support}
+<end cultural ground truth>
+
+Output Requirements
+- Return only paragraphs written entirely in {language}.
+- story should first person account
+- Do not include explanations or any other language.
+- All story paragraphs must be in {language}.
+- The image prompts should be written entirely in English.
+
+{narrative_progression}

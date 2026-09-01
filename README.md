@@ -39,8 +39,8 @@ If you use this repository, please cite:
 
 ```text
 .
-├── AnnotationPlatform/  # Reserved for the human annotation application
-├── StoryGen/            # Reserved for the story and image generation pipeline
+├── AnnotationPlatform/  # Story and image generation for annotation inputs
+├── StoryGen/            # Reserved for a future standalone generation service
 ├── config/              # Evaluator configuration
 ├── data/results/        # Generated JSONL output (ignored by Git)
 ├── examples/            # Synthetic evaluator inputs
@@ -50,9 +50,9 @@ If you use this repository, please cite:
 └── tests/               # Deterministic unit tests
 ```
 
-`AnnotationPlatform` and `StoryGen` currently contain scope and reproducibility
-requirements only. Their application code will be added as separate,
-privacy-reviewed components.
+`AnnotationPlatform` contains the cleaned research reproduction CLI, synthetic
+profile data, prompt templates, and optional image/storage integrations.
+`StoryGen` remains reserved for a future standalone service.
 
 ## Installation
 

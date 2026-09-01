@@ -1,0 +1,24 @@
+
+- **Paragraph 0:** Select persona fields related to routine, work responsibilities, and basic health knowledge gaps.
+
+- **Paragraph 1:**
+  Introduce daily life and diet habits that reflect **limited awareness** of how health affects work.
+  The small work task fails due to misunderstanding or neglect of health needs.
+
+- **Paragraph 2:**
+  Help comes from a **formal health source** (clinic or health worker).
+  Resistance is mild and based on uncertainty.
+  Advice is clear, simple, personalized, culturally relevant, actionable, and practical.
+  {max_word_count}
+
+- **Paragraph 3:**
+  The persona attempts the advice but struggles with **adjusting routines**.
+  A minor setback occurs due to habit change.
+  They persist because of the upcoming larger task.
+  {max_word_count}
+
+- **Paragraph 4:**
+  Gradual, realistic improvement occurs.
+  The larger task is accomplished with more confidence.
+  The persona becomes open to continued health improvement.
+  {max_word_count}

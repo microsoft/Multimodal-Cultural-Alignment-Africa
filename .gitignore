@@ -10,3 +10,4 @@ dist/
 *.egg-info/
 data/results/*
 !data/results/.gitkeep
+results/
