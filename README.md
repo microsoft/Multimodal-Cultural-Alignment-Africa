@@ -42,6 +42,7 @@ If you use this repository, please cite:
 ├── AnnotationPlatform/  # Human annotation application boundary
 ├── StoryGen/            # Modular grounded story and media generation
 ├── config/              # Evaluator configuration
+├── data/judgments/      # De-identified human and LLM judgment data
 ├── data/results/        # Generated JSONL output (ignored by Git)
 ├── examples/            # Synthetic evaluator inputs
 ├── main.py              # Command-line entry point
@@ -54,6 +55,19 @@ If you use this repository, please cite:
 data, prompt templates, RAG/web search, Azure and Hugging Face providers,
 image generation, Azure Speech narration, and optional storage integrations.
 `AnnotationPlatform` is retained as the privacy-reviewed application boundary.
+
+## Released evaluation data
+
+De-identified human annotations and matching multi-agent LLM judgments are
+available under `data/judgments/` for Hausa, isiXhosa, Kikuyu, Luo, and
+Xichangana. The human and LLM files use shared anonymous story IDs.
+
+Annotator names and email addresses, participant names and profile objects,
+internal user/submission/study IDs, prompts, search queries, and annotation
+timestamps are not included. Linkable external media URLs are also omitted;
+source profile values in free text are redacted, while media counts and image
+judgments remain. See `data/judgments/README.md` for the schema, counts,
+sanitization policy, and reproduction command.
 
 ## Installation
 
