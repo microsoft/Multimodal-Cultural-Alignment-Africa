@@ -65,11 +65,12 @@ Xichangana. The human and LLM files use shared anonymous story IDs.
 Annotator names and email addresses, participant names and profile objects,
 internal user/submission/study IDs, prompts, search queries, and annotation
 timestamps are not included. Linkable external media URLs are also omitted;
-source profile values in free text are redacted. Both judgment files reference
-the available images through anonymous repository-relative paths under
-`data/images/`; media counts and image judgments remain. See
-`data/judgments/README.md` for the schema, counts, sanitization policy, and
-reproduction command.
+synthetic profile attributes used to generate the stories are retained in free
+text, while profile objects and direct identifiers remain excluded. Both
+judgment files reference the available images through anonymous
+repository-relative paths under `data/images/`; media counts and image judgments
+remain. See `data/judgments/README.md` for the schema, counts, sanitization
+policy, and reproduction command.
 
 ## Installation
 

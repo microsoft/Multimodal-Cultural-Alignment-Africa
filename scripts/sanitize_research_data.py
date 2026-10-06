@@ -16,8 +16,8 @@ from urllib.parse import urlparse
 from tqdm import tqdm
 
 
-DATASET_VERSION = "1.1"
-RELEASE_DATE = "2026-10-05"
+DATASET_VERSION = "1.2"
+RELEASE_DATE = "2026-10-06"
 EMAIL_PATTERN = re.compile(
     r"(?i)[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}"
 )
@@ -570,6 +570,7 @@ def sanitize_language(
     output_dir: Path,
     image_dir: Path | None = None,
     image_path_prefix: Path = Path("data/images"),
+    preserve_profile_attributes: bool = False,
 ) -> dict[str, Any]:
     human_export = json.loads(human_path.read_text(encoding="utf-8"))
     source_llm_records = read_jsonl(llm_path)
@@ -594,6 +595,9 @@ def sanitize_language(
         for value in global_private_values
         if str(value).strip().casefold() not in public_values
     ]
+    private_values = (
+        [] if preserve_profile_attributes else global_private_values
+    )
     (
         human_records,
         story_ids,
@@ -606,7 +610,7 @@ def sanitize_language(
         language,
         config,
         global_names,
-        global_private_values,
+        private_values,
         image_dir,
         image_path_prefix,
     )
@@ -632,7 +636,7 @@ def sanitize_language(
                 record,
                 story_ids[raw_id],
                 names,
-                global_private_values,
+                private_values,
                 language,
                 config,
                 (
@@ -650,7 +654,7 @@ def sanitize_language(
         language_dir,
         global_names,
         story_ids.keys(),
-        global_private_values,
+        private_values,
     )
     summary = {
         "language": language,
@@ -669,6 +673,9 @@ def sanitize_language(
         summary["local_images"] = sum(
             len(paths) for paths in image_paths_by_raw_id.values()
         )
+    summary["synthetic_profile_attributes_preserved"] = (
+        preserve_profile_attributes
+    )
     return summary
 
 
@@ -776,6 +783,14 @@ def parse_args() -> argparse.Namespace:
         default=Path("data") / "images",
         help="Repository-relative path written into released records.",
     )
+    parser.add_argument(
+        "--preserve-profile-attributes",
+        action="store_true",
+        help=(
+            "Keep synthetic profile attributes in released free text. Names, "
+            "emails, raw IDs, and participant profile objects remain removed."
+        ),
+    )
     return parser.parse_args()
 
 
@@ -802,8 +817,12 @@ def main() -> int:
             "text_redaction": (
                 "All full participant names and name components observed in a "
                 "language source are replaced with 'Participant' throughout that "
-                "language's released text. Other source profile values are "
-                "replaced with '[REDACTED_PROFILE_ATTRIBUTE]'."
+                "language's released text. Synthetic profile attributes are "
+                + (
+                    "preserved in free text."
+                    if args.preserve_profile_attributes
+                    else "replaced with '[REDACTED_PROFILE_ATTRIBUTE]'."
+                )
             ),
             "local_images": (
                 "When --image-dir is supplied, available images are renamed "
@@ -832,6 +851,7 @@ def main() -> int:
                 args.output_dir,
                 args.image_dir,
                 args.image_path_prefix,
+                args.preserve_profile_attributes,
             )
         )
     assert_no_direct_identifiers(args.output_dir)

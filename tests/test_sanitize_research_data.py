@@ -18,9 +18,9 @@ def test_sanitizes_human_and_llm_judgments(tmp_path):
                     "<tr><td>What is your preferred name?</td>"
                     "<td>Private Name</td></tr>"
                 ),
-                "text": "Private Name changed a daily habit with Private Faith.",
+                "text": "Private Name changed a daily habit with Synthetic Faith.",
                 "paragraphs": [
-                    "Private Name changed a daily habit with Private Faith."
+                    "Private Name changed a daily habit with Synthetic Faith."
                 ],
                 "images": ["https://example.test/image.png"],
                 "audio": [],
@@ -60,7 +60,7 @@ def test_sanitizes_human_and_llm_judgments(tmp_path):
                                 {
                                     "id": "image-annotation-id",
                                     "comment": (
-                                        "Private Name wears Private Faith clothing."
+                                        "Private Name wears Synthetic Faith clothing."
                                     ),
                                     "userEmail": "annotator@example.com",
                                 }
@@ -86,7 +86,7 @@ def test_sanitizes_human_and_llm_judgments(tmp_path):
                 "id": "75",
                 "name": "Private Name",
                 "study_number": "private-study-number",
-                "religion": "Private Faith",
+                "religion": "Synthetic Faith",
                 "other_health_conditions": "Example Culture",
             },
             "question": "What should Private Name eat?",
@@ -142,7 +142,7 @@ def test_sanitizes_human_and_llm_judgments(tmp_path):
     assert "annotator@example.com" not in combined
     assert "private-user-id" not in combined
     assert "private-study-number" not in combined
-    assert "Private Faith" not in combined
+    assert "Synthetic Faith" not in combined
     assert "[REDACTED_PROFILE_ATTRIBUTE]" in combined
     assert '"culture": "Example Culture"' in combined
     assert '"person"' not in llm_output
@@ -152,6 +152,32 @@ def test_sanitizes_human_and_llm_judgments(tmp_path):
     assert not (image_dir / "image.png").exists()
     assert (image_dir / "example_story_001_00.png").is_file()
     assert summary["local_images"] == 1
+    assert not summary["synthetic_profile_attributes_preserved"]
+
+    preserved_dir = tmp_path / "preserved"
+    preserved_summary = sanitize_language(
+        "example",
+        {
+            "language_code": "en",
+            "country": "Example Country",
+            "culture": "Example Culture",
+        },
+        human_path,
+        llm_path,
+        preserved_dir,
+        image_dir=image_dir,
+        preserve_profile_attributes=True,
+    )
+    preserved = (
+        preserved_dir / "example" / "human_annotations.jsonl"
+    ).read_text(encoding="utf-8") + (
+        preserved_dir / "example" / "llm_judgments.jsonl"
+    ).read_text(encoding="utf-8")
+    assert "Synthetic Faith" in preserved
+    assert "[REDACTED_PROFILE_ATTRIBUTE]" not in preserved
+    assert "Private Name" not in preserved
+    assert "annotator@example.com" not in preserved
+    assert preserved_summary["synthetic_profile_attributes_preserved"]
 
 
 def test_redacts_participant_name_across_language_records(tmp_path):

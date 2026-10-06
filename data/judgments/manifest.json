@@ -1,6 +1,6 @@
 {
-  "dataset_version": "1.1",
-  "release_date": "2026-10-05",
+  "dataset_version": "1.2",
+  "release_date": "2026-10-06",
   "description": "De-identified human annotations and multi-agent LLM judgments.",
   "sanitization": {
     "story_ids": "Sequential language-local identifiers.",
@@ -14,7 +14,7 @@
       "annotation timestamps",
       "external media URLs containing raw story identifiers"
     ],
-    "text_redaction": "All full participant names and name components observed in a language source are replaced with 'Participant' throughout that language's released text. Other source profile values are replaced with '[REDACTED_PROFILE_ATTRIBUTE]'.",
+    "text_redaction": "All full participant names and name components observed in a language source are replaced with 'Participant' throughout that language's released text. Synthetic profile attributes are preserved in free text.",
     "local_images": "When --image-dir is supplied, available images are renamed with anonymous story IDs and referenced by repository-relative paths in both aligned judgment files.",
     "incomplete_annotations": "Annotator records with meaningful judgments for fewer than half of the language's stories are excluded."
   },
@@ -29,7 +29,8 @@
       "anonymous_annotators": 3,
       "excluded_incomplete_annotator_records": 0,
       "llm_judgments": 40,
-      "local_images": 163
+      "local_images": 163,
+      "synthetic_profile_attributes_preserved": true
     },
     {
       "language": "isixhosa",
@@ -41,7 +42,8 @@
       "anonymous_annotators": 3,
       "excluded_incomplete_annotator_records": 0,
       "llm_judgments": 40,
-      "local_images": 161
+      "local_images": 161,
+      "synthetic_profile_attributes_preserved": true
     },
     {
       "language": "kikuyu",
@@ -53,7 +55,8 @@
       "anonymous_annotators": 5,
       "excluded_incomplete_annotator_records": 0,
       "llm_judgments": 39,
-      "local_images": 159
+      "local_images": 159,
+      "synthetic_profile_attributes_preserved": true
     },
     {
       "language": "luo",
@@ -65,7 +68,8 @@
       "anonymous_annotators": 7,
       "excluded_incomplete_annotator_records": 0,
       "llm_judgments": 40,
-      "local_images": 162
+      "local_images": 162,
+      "synthetic_profile_attributes_preserved": true
     },
     {
       "language": "xichangana",
@@ -77,7 +81,8 @@
       "anonymous_annotators": 4,
       "excluded_incomplete_annotator_records": 1,
       "llm_judgments": 40,
-      "local_images": 164
+      "local_images": 164,
+      "synthetic_profile_attributes_preserved": true
     }
   ]
 }

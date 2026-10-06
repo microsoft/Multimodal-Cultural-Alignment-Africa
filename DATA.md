@@ -38,11 +38,13 @@ profiles, prompts, search queries, or annotation timestamps. Story and
 annotator IDs are replaced with language-local sequential identifiers.
 Participant names and name components are replaced throughout the released
 text. External media URLs are omitted because their object paths preserve raw
-story identifiers. Source profile values such as age, location, religion,
-occupation, dietary restrictions, disability, and health details are replaced
-with `[REDACTED_PROFILE_ATTRIBUTE]`. Available images are renamed using
-anonymous story IDs and referenced through repository-relative `data/images/`
-paths. Media counts and all image judgments remain available.
+story identifiers. Synthetic profile attributes used during generation, such
+as age, location, religion, occupation, dietary restrictions, disability, and
+health details, are retained in free text because they do not represent actual
+participants. The source profile objects themselves remain excluded. Available
+images are renamed using anonymous story IDs and referenced through
+repository-relative `data/images/` paths. Media counts and all image judgments
+remain available.
 
 See `data/judgments/README.md` and `data/judgments/manifest.json` for schemas,
 counts, exclusions, and reproduction instructions.
