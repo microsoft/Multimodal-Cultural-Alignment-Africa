@@ -361,12 +361,36 @@ def local_image_paths(
     return paths
 
 
+def local_audio_paths(
+    task: Mapping[str, Any],
+    public_id: str,
+    audio_dir: Path | None,
+    audio_path_prefix: Path,
+) -> list[str] | None:
+    if audio_dir is None:
+        return None
+
+    paths = []
+    for index, url in enumerate(task.get("audio", [])):
+        source_name = Path(urlparse(str(url)).path).name
+        suffix = Path(source_name).suffix.lower() or ".mp3"
+        public_name = f"{public_id}_{index:02d}{suffix}"
+        source = audio_dir / source_name
+        target = audio_dir / public_name
+        if not target.is_file() and source.is_file():
+            source.replace(target)
+        if target.is_file():
+            paths.append((audio_path_prefix / public_name).as_posix())
+    return paths
+
+
 def public_story(
     task: Mapping[str, Any],
     public_id: str,
     names: Iterable[str],
     private_values: Iterable[str],
     image_paths: Iterable[str] | None = None,
+    audio_paths: Iterable[str] | None = None,
 ) -> dict[str, Any]:
     metadata = task.get("metadata", {})
     story = {
@@ -390,6 +414,8 @@ def public_story(
     }
     if image_paths is not None:
         story["image_paths"] = list(image_paths)
+    if audio_paths is not None:
+        story["audio_paths"] = list(audio_paths)
     return story
 
 
@@ -401,9 +427,12 @@ def sanitize_human_export(
     global_private_values: Iterable[str] = (),
     image_dir: Path | None = None,
     image_path_prefix: Path = Path("data/images"),
+    audio_dir: Path | None = None,
+    audio_path_prefix: Path = Path("data/audio"),
 ) -> tuple[
     list[dict[str, Any]],
     dict[str, str],
+    dict[str, list[str]],
     dict[str, list[str]],
     dict[str, list[str]],
     int,
@@ -427,6 +456,7 @@ def sanitize_human_export(
     output = []
     judgment_count = 0
     image_paths_by_raw_id = {}
+    audio_paths_by_raw_id = {}
     for task in tqdm(
         tasks,
         desc=f"{language}: human stories",
@@ -442,6 +472,13 @@ def sanitize_human_export(
             image_path_prefix,
         )
         image_paths_by_raw_id[raw_id] = image_paths or []
+        audio_paths = local_audio_paths(
+            task,
+            story_ids[raw_id],
+            audio_dir,
+            audio_path_prefix,
+        )
+        audio_paths_by_raw_id[raw_id] = audio_paths or []
         record = {
             "dataset_version": DATASET_VERSION,
             "language": language,
@@ -454,6 +491,7 @@ def sanitize_human_export(
                 names,
                 global_private_values,
                 image_paths,
+                audio_paths,
             ),
             "human_annotations": [],
         }
@@ -480,6 +518,7 @@ def sanitize_human_export(
         story_ids,
         names_by_raw_id,
         image_paths_by_raw_id,
+        audio_paths_by_raw_id,
         len(annotators),
         excluded_annotators,
     )
@@ -570,6 +609,8 @@ def sanitize_language(
     output_dir: Path,
     image_dir: Path | None = None,
     image_path_prefix: Path = Path("data/images"),
+    audio_dir: Path | None = None,
+    audio_path_prefix: Path = Path("data/audio"),
     preserve_profile_attributes: bool = False,
 ) -> dict[str, Any]:
     human_export = json.loads(human_path.read_text(encoding="utf-8"))
@@ -603,6 +644,7 @@ def sanitize_language(
         story_ids,
         human_names,
         image_paths_by_raw_id,
+        audio_paths_by_raw_id,
         annotator_count,
         excluded_annotators,
     ) = sanitize_human_export(
@@ -613,6 +655,8 @@ def sanitize_language(
         private_values,
         image_dir,
         image_path_prefix,
+        audio_dir,
+        audio_path_prefix,
     )
 
     llm_records = []
@@ -672,6 +716,10 @@ def sanitize_language(
     if image_dir is not None:
         summary["local_images"] = sum(
             len(paths) for paths in image_paths_by_raw_id.values()
+        )
+    if audio_dir is not None:
+        summary["local_audio"] = sum(
+            len(paths) for paths in audio_paths_by_raw_id.values()
         )
     summary["synthetic_profile_attributes_preserved"] = (
         preserve_profile_attributes
@@ -784,6 +832,20 @@ def parse_args() -> argparse.Namespace:
         help="Repository-relative path written into released records.",
     )
     parser.add_argument(
+        "--audio-dir",
+        type=Path,
+        help=(
+            "Opt in to anonymous local audio paths in human records by "
+            "supplying the directory containing downloaded narration files."
+        ),
+    )
+    parser.add_argument(
+        "--audio-path-prefix",
+        type=Path,
+        default=Path("data") / "audio",
+        help="Repository-relative audio path written into human records.",
+    )
+    parser.add_argument(
         "--preserve-profile-attributes",
         action="store_true",
         help=(
@@ -829,6 +891,11 @@ def main() -> int:
                 "with anonymous story IDs and referenced by repository-relative "
                 "paths in both aligned judgment files."
             ),
+            "local_audio": (
+                "When --audio-dir is supplied, available narration files are "
+                "renamed with anonymous story IDs and referenced by "
+                "repository-relative paths in human annotation records."
+            ),
             "incomplete_annotations": (
                 "Annotator records with meaningful judgments for fewer than half "
                 "of the language's stories are excluded."
@@ -851,6 +918,8 @@ def main() -> int:
                 args.output_dir,
                 args.image_dir,
                 args.image_path_prefix,
+                args.audio_dir,
+                args.audio_path_prefix,
                 args.preserve_profile_attributes,
             )
         )

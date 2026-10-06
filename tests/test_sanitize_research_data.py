@@ -23,7 +23,7 @@ def test_sanitizes_human_and_llm_judgments(tmp_path):
                     "Private Name changed a daily habit with Synthetic Faith."
                 ],
                 "images": ["https://example.test/image.png"],
-                "audio": [],
+                "audio": ["https://example.test/audio.mp3"],
                 "question": "What should Private Name eat?",
                 "category": "diet",
                 "taskType": "independent",
@@ -112,6 +112,9 @@ def test_sanitizes_human_and_llm_judgments(tmp_path):
     image_dir = tmp_path / "images"
     image_dir.mkdir()
     (image_dir / "image.png").write_bytes(b"test image")
+    audio_dir = tmp_path / "audio"
+    audio_dir.mkdir()
+    (audio_dir / "audio.mp3").write_bytes(b"test audio")
 
     summary = sanitize_language(
         "example",
@@ -124,6 +127,7 @@ def test_sanitizes_human_and_llm_judgments(tmp_path):
         llm_path,
         output_dir,
         image_dir=image_dir,
+        audio_dir=audio_dir,
     )
     assert_no_direct_identifiers(output_dir)
 
@@ -149,9 +153,15 @@ def test_sanitizes_human_and_llm_judgments(tmp_path):
     assert "https://example.test/image.png" not in human_output
     assert '"image_count": 1' in human_output
     assert '"image_paths": ["data/images/example_story_001_00.png"]' in combined
+    assert '"audio_count": 1' in human_output
+    assert '"audio_paths": ["data/audio/example_story_001_00.mp3"]' in human_output
+    assert '"audio_paths"' not in llm_output
     assert not (image_dir / "image.png").exists()
     assert (image_dir / "example_story_001_00.png").is_file()
+    assert not (audio_dir / "audio.mp3").exists()
+    assert (audio_dir / "example_story_001_00.mp3").is_file()
     assert summary["local_images"] == 1
+    assert summary["local_audio"] == 1
     assert not summary["synthetic_profile_attributes_preserved"]
 
     preserved_dir = tmp_path / "preserved"
@@ -166,6 +176,7 @@ def test_sanitizes_human_and_llm_judgments(tmp_path):
         llm_path,
         preserved_dir,
         image_dir=image_dir,
+        audio_dir=audio_dir,
         preserve_profile_attributes=True,
     )
     preserved = (
@@ -241,6 +252,7 @@ def test_redacts_participant_name_across_language_records(tmp_path):
     assert "Unique Person" not in output
     assert "Unique" not in output
     assert '"image_paths"' not in output
+    assert '"audio_paths"' not in output
 
 
 def test_zero_score_is_meaningful():
