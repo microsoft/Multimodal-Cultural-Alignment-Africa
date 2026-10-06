@@ -1,0 +1,1 @@
+data/images/*_story_*.png filter=lfs diff=lfs merge=lfs -text

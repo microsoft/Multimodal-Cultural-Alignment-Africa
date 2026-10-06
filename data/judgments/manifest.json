@@ -1,6 +1,6 @@
 {
-  "dataset_version": "1.0",
-  "release_date": "2026-09-01",
+  "dataset_version": "1.1",
+  "release_date": "2026-10-05",
   "description": "De-identified human annotations and multi-agent LLM judgments.",
   "sanitization": {
     "story_ids": "Sequential language-local identifiers.",
@@ -15,6 +15,7 @@
       "external media URLs containing raw story identifiers"
     ],
     "text_redaction": "All full participant names and name components observed in a language source are replaced with 'Participant' throughout that language's released text. Other source profile values are replaced with '[REDACTED_PROFILE_ATTRIBUTE]'.",
+    "local_images": "When --image-dir is supplied, available images are renamed with anonymous story IDs and referenced by repository-relative paths in both aligned judgment files.",
     "incomplete_annotations": "Annotator records with meaningful judgments for fewer than half of the language's stories are excluded."
   },
   "languages": [
@@ -27,7 +28,8 @@
       "human_judgments": 120,
       "anonymous_annotators": 3,
       "excluded_incomplete_annotator_records": 0,
-      "llm_judgments": 40
+      "llm_judgments": 40,
+      "local_images": 163
     },
     {
       "language": "isixhosa",
@@ -38,7 +40,8 @@
       "human_judgments": 120,
       "anonymous_annotators": 3,
       "excluded_incomplete_annotator_records": 0,
-      "llm_judgments": 40
+      "llm_judgments": 40,
+      "local_images": 161
     },
     {
       "language": "kikuyu",
@@ -49,7 +52,8 @@
       "human_judgments": 195,
       "anonymous_annotators": 5,
       "excluded_incomplete_annotator_records": 0,
-      "llm_judgments": 39
+      "llm_judgments": 39,
+      "local_images": 159
     },
     {
       "language": "luo",
@@ -60,7 +64,8 @@
       "human_judgments": 280,
       "anonymous_annotators": 7,
       "excluded_incomplete_annotator_records": 0,
-      "llm_judgments": 40
+      "llm_judgments": 40,
+      "local_images": 162
     },
     {
       "language": "xichangana",
@@ -71,7 +76,8 @@
       "human_judgments": 160,
       "anonymous_annotators": 4,
       "excluded_incomplete_annotator_records": 1,
-      "llm_judgments": 40
+      "llm_judgments": 40,
+      "local_images": 164
     }
   ]
 }

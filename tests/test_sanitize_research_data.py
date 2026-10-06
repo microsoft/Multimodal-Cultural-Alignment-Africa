@@ -109,6 +109,9 @@ def test_sanitizes_human_and_llm_judgments(tmp_path):
     llm_path = tmp_path / "llm.jsonl"
     llm_path.write_text(json.dumps(llm) + "\n", encoding="utf-8")
     output_dir = tmp_path / "output"
+    image_dir = tmp_path / "images"
+    image_dir.mkdir()
+    (image_dir / "image.png").write_bytes(b"test image")
 
     summary = sanitize_language(
         "example",
@@ -120,6 +123,7 @@ def test_sanitizes_human_and_llm_judgments(tmp_path):
         human_path,
         llm_path,
         output_dir,
+        image_dir=image_dir,
     )
     assert_no_direct_identifiers(output_dir)
 
@@ -144,6 +148,10 @@ def test_sanitizes_human_and_llm_judgments(tmp_path):
     assert '"person"' not in llm_output
     assert "https://example.test/image.png" not in human_output
     assert '"image_count": 1' in human_output
+    assert '"image_paths": ["data/images/example_story_001_00.png"]' in combined
+    assert not (image_dir / "image.png").exists()
+    assert (image_dir / "example_story_001_00.png").is_file()
+    assert summary["local_images"] == 1
 
 
 def test_redacts_participant_name_across_language_records(tmp_path):
@@ -206,6 +214,7 @@ def test_redacts_participant_name_across_language_records(tmp_path):
     ).read_text(encoding="utf-8")
     assert "Unique Person" not in output
     assert "Unique" not in output
+    assert '"image_paths"' not in output
 
 
 def test_zero_score_is_meaningful():

@@ -12,3 +12,4 @@ data/results/*
 !data/results/.gitkeep
 results/
 StoryGen/data/
+data/audio/*

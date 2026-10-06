@@ -72,7 +72,6 @@ class AzureOpenAISettings:
         api_version = (
             os.getenv(f"{prefix}_API_VERSION")
             or os.getenv("TRAPI_API_VERSION")
-            or "2025-04-01-preview"
         )
         default_scope = (
             "https://ai.azure.com/.default"

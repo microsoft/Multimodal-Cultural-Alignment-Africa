@@ -11,12 +11,13 @@ import json
 import re
 from pathlib import Path
 from typing import Any, Iterable, Mapping
+from urllib.parse import urlparse
 
 from tqdm import tqdm
 
 
-DATASET_VERSION = "1.0"
-RELEASE_DATE = "2026-09-01"
+DATASET_VERSION = "1.1"
+RELEASE_DATE = "2026-10-05"
 EMAIL_PATTERN = re.compile(
     r"(?i)[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}"
 )
@@ -337,14 +338,38 @@ def sanitize_human_judgment(
     }
 
 
+def local_image_paths(
+    task: Mapping[str, Any],
+    public_id: str,
+    image_dir: Path | None,
+    image_path_prefix: Path,
+) -> list[str] | None:
+    if image_dir is None:
+        return None
+
+    paths = []
+    for index, url in enumerate(task.get("images", [])):
+        source_name = Path(urlparse(str(url)).path).name
+        suffix = Path(source_name).suffix.lower() or ".png"
+        public_name = f"{public_id}_{index:02d}{suffix}"
+        source = image_dir / source_name
+        target = image_dir / public_name
+        if not target.is_file() and source.is_file():
+            source.replace(target)
+        if target.is_file():
+            paths.append((image_path_prefix / public_name).as_posix())
+    return paths
+
+
 def public_story(
     task: Mapping[str, Any],
     public_id: str,
     names: Iterable[str],
     private_values: Iterable[str],
+    image_paths: Iterable[str] | None = None,
 ) -> dict[str, Any]:
     metadata = task.get("metadata", {})
-    return {
+    story = {
         "story_id": public_id,
         "story": replace_private_text(
             str(task.get("text", "")), names, private_values
@@ -363,6 +388,9 @@ def public_story(
         "model": metadata.get("model"),
         "story_arc": metadata.get("story_arc"),
     }
+    if image_paths is not None:
+        story["image_paths"] = list(image_paths)
+    return story
 
 
 def sanitize_human_export(
@@ -371,7 +399,16 @@ def sanitize_human_export(
     config: Mapping[str, str],
     global_names: Iterable[str] = (),
     global_private_values: Iterable[str] = (),
-) -> tuple[list[dict[str, Any]], dict[str, str], dict[str, list[str]], int, int]:
+    image_dir: Path | None = None,
+    image_path_prefix: Path = Path("data/images"),
+) -> tuple[
+    list[dict[str, Any]],
+    dict[str, str],
+    dict[str, list[str]],
+    dict[str, list[str]],
+    int,
+    int,
+]:
     tasks = human_export.get("tasks", [])
     story_ids = {
         str(task["id"]): f"{language}_story_{index:03d}"
@@ -389,6 +426,7 @@ def sanitize_human_export(
 
     output = []
     judgment_count = 0
+    image_paths_by_raw_id = {}
     for task in tqdm(
         tasks,
         desc=f"{language}: human stories",
@@ -397,6 +435,13 @@ def sanitize_human_export(
     ):
         raw_id = str(task["id"])
         names = list(global_names) + names_by_raw_id[raw_id]
+        image_paths = local_image_paths(
+            task,
+            story_ids[raw_id],
+            image_dir,
+            image_path_prefix,
+        )
+        image_paths_by_raw_id[raw_id] = image_paths or []
         record = {
             "dataset_version": DATASET_VERSION,
             "language": language,
@@ -408,6 +453,7 @@ def sanitize_human_export(
                 story_ids[raw_id],
                 names,
                 global_private_values,
+                image_paths,
             ),
             "human_annotations": [],
         }
@@ -433,6 +479,7 @@ def sanitize_human_export(
         output,
         story_ids,
         names_by_raw_id,
+        image_paths_by_raw_id,
         len(annotators),
         excluded_annotators,
     )
@@ -445,11 +492,12 @@ def sanitize_llm_record(
     private_values: Iterable[str],
     language: str,
     config: Mapping[str, str],
+    image_paths: Iterable[str] | None = None,
 ) -> dict[str, Any]:
     input_data = record.get("input", {})
     output_data = record.get("output", {})
     metadata = record.get("metadata", {})
-    return {
+    sanitized = {
         "dataset_version": DATASET_VERSION,
         "language": language,
         "language_code": config["language_code"],
@@ -481,6 +529,9 @@ def sanitize_llm_record(
             ),
         },
     }
+    if image_paths is not None:
+        sanitized["image_paths"] = list(image_paths)
+    return sanitized
 
 
 def read_jsonl(path: Path) -> list[dict[str, Any]]:
@@ -517,6 +568,8 @@ def sanitize_language(
     human_path: Path,
     llm_path: Path,
     output_dir: Path,
+    image_dir: Path | None = None,
+    image_path_prefix: Path = Path("data/images"),
 ) -> dict[str, Any]:
     human_export = json.loads(human_path.read_text(encoding="utf-8"))
     source_llm_records = read_jsonl(llm_path)
@@ -545,6 +598,7 @@ def sanitize_language(
         human_records,
         story_ids,
         human_names,
+        image_paths_by_raw_id,
         annotator_count,
         excluded_annotators,
     ) = sanitize_human_export(
@@ -553,6 +607,8 @@ def sanitize_language(
         config,
         global_names,
         global_private_values,
+        image_dir,
+        image_path_prefix,
     )
 
     llm_records = []
@@ -579,6 +635,11 @@ def sanitize_language(
                 global_private_values,
                 language,
                 config,
+                (
+                    image_paths_by_raw_id[raw_id]
+                    if image_dir is not None
+                    else None
+                ),
             )
         )
 
@@ -591,7 +652,7 @@ def sanitize_language(
         story_ids.keys(),
         global_private_values,
     )
-    return {
+    summary = {
         "language": language,
         "language_code": config["language_code"],
         "country": config["country"],
@@ -604,6 +665,11 @@ def sanitize_language(
         "excluded_incomplete_annotator_records": excluded_annotators,
         "llm_judgments": len(llm_records),
     }
+    if image_dir is not None:
+        summary["local_images"] = sum(
+            len(paths) for paths in image_paths_by_raw_id.values()
+        )
+    return summary
 
 
 def assert_no_direct_identifiers(output_dir: Path) -> None:
@@ -696,6 +762,20 @@ def parse_args() -> argparse.Namespace:
         type=Path,
         default=Path("data") / "judgments",
     )
+    parser.add_argument(
+        "--image-dir",
+        type=Path,
+        help=(
+            "Opt in to anonymous local image paths by supplying the directory "
+            "containing images downloaded with their source basenames."
+        ),
+    )
+    parser.add_argument(
+        "--image-path-prefix",
+        type=Path,
+        default=Path("data") / "images",
+        help="Repository-relative path written into released records.",
+    )
     return parser.parse_args()
 
 
@@ -725,6 +805,11 @@ def main() -> int:
                 "language's released text. Other source profile values are "
                 "replaced with '[REDACTED_PROFILE_ATTRIBUTE]'."
             ),
+            "local_images": (
+                "When --image-dir is supplied, available images are renamed "
+                "with anonymous story IDs and referenced by repository-relative "
+                "paths in both aligned judgment files."
+            ),
             "incomplete_annotations": (
                 "Annotator records with meaningful judgments for fewer than half "
                 "of the language's stories are excluded."
@@ -745,6 +830,8 @@ def main() -> int:
                 args.human_dir / config["human_file"],
                 args.llm_dir / config["llm_file"],
                 args.output_dir,
+                args.image_dir,
+                args.image_path_prefix,
             )
         )
     assert_no_direct_identifiers(args.output_dir)
