@@ -1,9 +1,9 @@
 # Data and privacy
 
-This public repository contains only synthetic demonstration records. It does
-not include the original annotation-platform exports, annotator identities,
-study participant data, generated evaluation runs, or unpublished research
-artifacts used during development.
+This public repository contains synthetic demonstration records and the
+de-identified evaluation judgments described below. It does not include the
+original annotation-platform exports, annotator identities, study participant
+data, or unpublished research artifacts used during development.
 
 To evaluate another dataset, convert each record to the schema demonstrated in
 `examples/sample_stories.json`. Remove direct identifiers and confirm that you

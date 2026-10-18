@@ -39,14 +39,15 @@ If you use this repository, please cite:
 
 ```text
 .
-├── AnnotationPlatform/  # Human annotation application boundary
 ├── StoryGen/            # Modular grounded story and media generation
 ├── config/              # Evaluator configuration
+├── data/images/         # Anonymized story images referenced by judgments
 ├── data/judgments/      # De-identified human and LLM judgment data
 ├── data/results/        # Generated JSONL output (ignored by Git)
 ├── examples/            # Synthetic evaluator inputs
 ├── main.py              # Command-line entry point
 ├── run.sh               # Convenience runner
+├── scripts/             # Release data de-identification
 ├── src/                 # Cultural-alignment evaluator
 └── tests/               # Deterministic unit tests
 ```
@@ -54,7 +55,6 @@ If you use this repository, please cite:
 `StoryGen` contains the cleaned research reproduction CLI, synthetic profile
 data, prompt templates, RAG/web search, Azure and Hugging Face providers,
 image generation, Azure Speech narration, and optional storage integrations.
-`AnnotationPlatform` is retained as the privacy-reviewed application boundary.
 
 ## Released evaluation data
 
