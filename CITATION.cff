@@ -1,10 +1,46 @@
 cff-version: 1.2.0
-message: "If you use this software, please cite it using this metadata."
+message: "If you use this software or data, please cite the associated paper."
 title: "Multimodal Cultural Alignment Africa"
 type: software
-authors:
-  - name: "Microsoft Corporation"
+authors: &authors
+  - given-names: "Millicent"
+    family-names: "Ochieng"
+  - given-names: "Felermino D. M. A."
+    family-names: "Ali"
+  - given-names: "Elizabeth A."
+    family-names: "Ankrah"
+  - given-names: "Najeeb Gambo"
+    family-names: "Abdulhamid"
+  - given-names: "Migisha"
+    family-names: "Boyd"
+  - given-names: "Stephanie"
+    family-names: "Nyairo"
+  - given-names: "Mercy"
+    family-names: "Muchai"
+  - given-names: "Samuel Chege"
+    family-names: "Maina"
+  - given-names: "Aditya"
+    family-names: "Vashistha"
+  - given-names: "Anja"
+    family-names: "Thieme"
+  - given-names: "Jacki"
+    family-names: "O'Neill"
 repository-code: "https://github.com/microsoft/Multimodal-Cultural-Alignment-Africa"
 license: MIT
-version: 0.1.0
-date-released: 2026-09-01
+version: 1.0.0
+date-released: 2026-10-18
+keywords:
+  - cultural alignment
+  - multimodal evaluation
+  - LLM-as-a-judge
+  - African languages
+preferred-citation:
+  type: conference-paper
+  title: "Toward Cultural Alignment: Human-Centered Evaluation of Multimodal AI Stories Across Five African Communities"
+  authors: *authors
+  collection-title: "Findings of the Association for Computational Linguistics: EMNLP 2026"
+  year: 2026
+  url: "https://arxiv.org/abs/2608.29209"
+  identifiers:
+    - type: other
+      value: "arXiv:2608.29209"
